@@ -12,7 +12,7 @@
 
  ## Clone the project
  ```bash
-git clone <url-du-repo>
+git clone https://github.com/touady18/supercourrier_projectV2.git
 cd supercourier_project
 ```
 
