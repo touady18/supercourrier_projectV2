@@ -7,6 +7,7 @@
 - Modules Python :
   - `pandas`
   - `numpy`
+  - `matplotlib`
 
  ## Local installation
 
