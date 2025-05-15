@@ -168,15 +168,12 @@ def load_weather_data():
 def enrich_with_weather(df, weather_data):
     """
     Enriches the DataFrame with weather conditions
-    Enriches the DataFrame with new columns : Weekday, Hour
-    Change feature names
-    Delete one feature
-    Add Distance feature to the dataframe
+    
     """
     logger.info("Enriching with weather data...")
     
     # Convert date column to datetime
-    df['pickup_datetime'] = pd.to_datetime(df['pickup_datetime'])
+    df['pickup_datetime'] = pd.to_datetime(df['pickup_datetime'], errors='coerce')
     
     # Function to get weather for a given timestamp
     def get_weather(timestamp):
@@ -190,27 +187,6 @@ def enrich_with_weather(df, weather_data):
     
     # Apply function to each row
     df['WeatherCondition'] = df['pickup_datetime'].apply(get_weather)
-
-    #Create new features
-    #Added 15/05/
-    df['pickup_datetime'] = pd.to_datetime(df['pickup_datetime'], errors='coerce')
-    df['Hour'] = df['pickup_datetime'].dt.hour.astype(str)
-    df['Weekday'] = df['pickup_datetime'].dt.day_name()
-    
-    #Change feature names
-    df = df.rename(columns={'delivery_id': 'Delivery_ID',
-                            'pickup_datetime' : 'Pickup_DateTime',
-                            'package_type': 'Package_Type',
-                            'delivery_zone' : 'Delivery_Zone',
-                            'WeatherCondition' : 'Weather_Condition'
-                              })
-
-    #Delete 
-    df = df.drop(['recipient_id'], axis=1)
-    
-    #Add distance feature
-    df['Distance'] = np.random.uniform(5,100, size=len(df))
-    df['Distance'] = df['Distance'].round(2)
 
     return df
 
@@ -277,12 +253,35 @@ def calculate_ajusted_theoretical_time(row):
 def transform_data(df_deliveries, weather_data):
     """
     Main data transformation function
-    To be completed by participants
+    Enriches the DataFrame with new columns : Weekday, Hour
+    Change feature names
+    Delete one feature
+    Add Distance feature to the dataframe
+    Calculate actual time delivery and add Status
     """
   
     logger.info("Transforming data...")
     # 1 Enrich with weather data
     df_deliveries = enrich_with_weather(df_deliveries, weather_data)
+
+    #Create new features
+    df_deliveries['Hour'] = df_deliveries['pickup_datetime'].dt.hour.astype(str)
+    df_deliveries['Weekday'] = df_deliveries['pickup_datetime'].dt.day_name()
+    
+    #Change feature names
+    df_deliveries = df_deliveries.rename(columns={'delivery_id': 'Delivery_ID',
+                            'pickup_datetime' : 'Pickup_DateTime',
+                            'package_type': 'Package_Type',
+                            'delivery_zone' : 'Delivery_Zone',
+                            'WeatherCondition' : 'Weather_Condition'
+                              })
+
+    #Delete 
+    df_deliveries = df_deliveries.drop(['recipient_id'], axis=1)
+    
+    #Add distance feature
+    df_deliveries['Distance'] = np.random.uniform(5,100, size=len(df_deliveries))
+    df_deliveries['Distance'] = df_deliveries['Distance'].round(2)
 
     # 2. Calculate "ajusted theoritical delivery time"
     logger.info("Calculate ajusted theorical delivery time...")

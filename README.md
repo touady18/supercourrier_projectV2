@@ -1,13 +1,22 @@
  # SuperCourier project - Mini ETL Delivery Delay Pipeline 
  superCourier is a mini pepline coded in Python that simulates delivery activity by taking several factors into account (delivery zone, weather, day of the week, etc.).
 
- # Local installation
+## Prérequis
 
- # Clone the project
+- Python 3.8+  
+- Modules Python :
+  - `pandas`
+  - `numpy`
+
+ ## Local installation
+
+ ## Clone the project
+ ```bash
 git clone <url-du-repo>
 cd supercourier_project
+```
 
-# Launch the pipeline
+## Launch the pipeline
 python de-code-snippet.py
 
 
