@@ -30,6 +30,9 @@ Load the data to a dataframe
 ## transform_data()
 Transform the data and calculate the delivery times
 
+## status_chart()
+Generate a chart with different Status
+
 ## save_results()
 Save the result into a csv file
 deliveries.csv

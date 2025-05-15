@@ -9,6 +9,7 @@ import logging
 from datetime import datetime, timedelta
 import random
 import os
+import matplotlib.pyplot as plt
 
 # Logging configuration
 logging.basicConfig(
@@ -221,7 +222,7 @@ def calculate_ajusted_theoretical_time(row):
         'Foggy': 1.3,
         'Unknown': 1.0
     }
-    # base_theorical_time : 30 + distance * 0.8 minutes
+    # base_theorical_time : 30 + distance * 0.8 minutes (*60 secondes)
     base_theorical_time = 30 + row['Distance'] * 0.8
         
     # Apply package factor
@@ -232,9 +233,9 @@ def calculate_ajusted_theoretical_time(row):
         
     # Apply time of day factor
     hour = int(row['Hour'])
-    if 7 <= hour < 10:  # Morning peak
+    if 1 <= hour < 12:  # Morning peak
         adjusted_theorical_time *= 1.3
-    elif 16 <= hour < 19:  # Evening peak
+    elif 12 <= hour <= 23:  # Evening peak
         adjusted_theorical_time *= 1.4
         
     # Apply day of week factor
@@ -249,6 +250,13 @@ def calculate_ajusted_theoretical_time(row):
     adjusted_theorical_time *= weather_factor
 
     return adjusted_theorical_time
+
+
+def format_time(time_in_minutes):
+    total_seconds = round(time_in_minutes * 60)
+    minutes = total_seconds // 60  # Division entière
+    seconds = total_seconds % 60   # Reste de la division
+    return float(f"{minutes:02d}.{seconds:02d}")
 
 def transform_data(df_deliveries, weather_data):
     """
@@ -297,6 +305,12 @@ def transform_data(df_deliveries, weather_data):
         lambda x: round(max(10, np.random.normal(x, x * 0.15)), 1)
     )
 
+    # Transform df_deliveries['Actual_Delivery_Time'] to minutes :
+    df_deliveries['Actual_Delivery_Time'] = df_deliveries['Actual_Delivery_Time']
+
+    # Transform time
+    df_deliveries['Actual_Delivery_Time'] = df_deliveries['Actual_Delivery_Time'].apply(format_time)
+
     # 5. Determine Status
     logger.info("Determine the status of the delivery...")
     df_deliveries['Status'] = df_deliveries.apply(
@@ -313,8 +327,9 @@ def transform_data(df_deliveries, weather_data):
 
     return df_deliveries  # Return transformed DataFrame
 
-# Validation dataframe
 
+
+# Validation dataframe
 def validation_dataframe(df, required_columns):
     """
     Validate the dataframe
@@ -358,6 +373,23 @@ def save_results(df):
         logger.error(f"Error when saving data : {e}")
         return False
 
+# Generate a chart with Status
+def status_chart(df):
+
+    # count nb lines per Status
+    status_counts = df['Status'].value_counts()
+
+    # Chart
+    status_counts.plot(kind='bar', color='skyblue', edgecolor='black')
+    plt.title('Nb deliveries by Status')
+    plt.xlabel('Status')
+    plt.ylabel('Nb deliveries')
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+    plt.show()
+
+
+
 # MAIN FUNCTION
 def run_pipeline():
     """
@@ -380,6 +412,9 @@ def run_pipeline():
         save_results(df_transformed)
         
         logger.info("ETL pipeline completed successfully")
+
+        #generate a status chart
+        status_chart(df_transformed)
         return True
         
     except Exception as e:
